@@ -59,6 +59,7 @@ const Signup = {
       experience: 0,
       file: null,
       showCommonFields: true,
+      message: "",
     };
   },
   methods: {
@@ -94,9 +95,11 @@ const Signup = {
 
       if (res.ok) {
         const data = await res.json();
+        this.message = data.message;
         router.push("/login");
       } else {
         const errorData = await res.json();
+        this.message = errorData.message;
         console.error("Sign up failed:", errorData);
       }
     },
