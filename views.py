@@ -1,12 +1,12 @@
 # views.py
-from flask import render_template, render_template_string, Flask, request, jsonify
+from flask import flash, redirect, render_template, render_template_string, Flask, request, jsonify, url_for
 from flask_security import auth_required, current_user, roles_required
 from flask_security.utils import hash_password
 from werkzeug.utils import secure_filename
 from extensions import db, security
 import os
 
-from models import Customer, ServiceProfessional
+from models import Customer, ServiceProfessional,Role,User,UserRoles
 
 ALLOWED_EXTENSIONS = {'pdf'}
 
@@ -18,6 +18,21 @@ def create_views(app: Flask, user_datastore):
     @app.route('/')
     def home():
         return render_template('index.html') 
+    
+    @app.route('/upload', methods=['POST'])
+    def upload_file():
+        if 'file' not in request.files:
+            flash('No file part')
+            return redirect(request.url)
+        file = request.files['file']
+        if file.filename == '':
+            flash('No selected file')
+            return redirect(request.url)
+        if file:
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], file.filename))
+            flash('File successfully uploaded')
+            return redirect(url_for('upload_file'))
+
 
     @app.route('/profile')
     @auth_required('token', 'session')
@@ -33,59 +48,84 @@ def create_views(app: Flask, user_datastore):
 
     @app.route('/register', methods=['POST'])
     def register():
-        data = request.form
-        email = data.get('email')
-        password = data.get('password')
-        role = data.get('role')
-        name = data.get('name')
-        address = data.get('address')
-        pincode = data.get('pincode')
+     data = request.form
+     email = data.get('email').strip().lower()
+     password = data.get('password')
+     role_name = data.get('role')
+     name = data.get('name')
+     address = data.get('address')
+     phone = data.get('phone')
+     pincode = data.get('pincode')
 
-        if not email or not password or not role or not name or not address or not pincode:
-            return jsonify({'message': 'Invalid input'}), 403
+    # Check for missing fields
+     if not email or not password or not role_name or not name or not address or not pincode:
+        return jsonify({'message': 'Invalid input'}), 403
 
-        if user_datastore.find_user(email=email):
-            return jsonify({'message': 'User already exists'}), 400
+    # Check if the user already exists
+     if user_datastore.find_user(email=email):
+        return jsonify({'message': 'User already exists'}), 400
+    
+    # Find the role
+     role = user_datastore.find_role(role_name)
+     if role is None:
+         return jsonify({'message': 'Invalid role specified'}), 400
+    
+    # Create the user
+     try:
+        user = user_datastore.create_user(email=email, password=hash_password(password), active=True)
+        user.roles.append(role)
+        db.session.add(user)
+        db.session.commit()
+     except Exception as e:
+        return jsonify({'message': 'User creation failed: ' + str(e)}), 500
+     if user.id is None:
+        return jsonify({'message': 'User creation failed, user ID is None'}), 500
 
-        if role == 'service_professional':
-            service_type = data.get('service_type')
-            experience = data.get('experience')
+    # Handle role-specific logic
+     if role_name == 'service_professional':
+        service_type = data.get('service_type')
+        experience = data.get('experience')
 
-            if 'documents' not in request.files:
-                return jsonify({'message': 'Document upload is required'}), 400
+        # Check if documents are provided
+        if 'documents' not in request.files:
+            return jsonify({'message': 'Document upload is required'}), 400
 
-            file = request.files['documents']
-            if file and allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        file = request.files['documents']
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
-            user = user_datastore.create_user(email=email, password=hash_password(password), active=True, roles=['service_professional'])
-            professional_profile = ServiceProfessional(
-                name=name,
-                service_type=service_type,
-                experience=experience,
-                address=address,
-                pincode=pincode,
-                documents=filename,  
-                user_id=user.id
-            )
-            db.session.add(professional_profile)
-            db.session.commit()
-            return jsonify({'message': 'Service professional successfully registered'}), 201
+        # Create a professional profile
+        professional_profile = ServiceProfessional(
+            name=name,
+            service_type=service_type,
+            experience=experience,
+            address=address,
+            phone=phone, 
+            pincode=pincode,
+            documents=filename,
+            user_id=user.id
+        )
+        db.session.add(professional_profile)
 
-        elif role == 'customer':
-            user = user_datastore.create_user(email=email, password=hash_password(password), active=True, roles=['customer'])
-            customer_profile = Customer(
-                name=name,
-                address=address,
-                pincode=pincode,
-                user_id=user.id
-            )
-            db.session.add(customer_profile)
-            db.session.commit()
-            return jsonify({'message': 'Customer successfully registered'}), 201
+     elif role_name == 'customer':
+        # Create a customer profile
+        customer_profile = Customer(
+            name=name,
+            address=address,
+            phone=phone, 
+            pincode=pincode,
+            user_id=user.id
+        )
+        db.session.add(customer_profile)
+    
 
-        return jsonify({'message': 'Invalid role'}), 400
+    # Commit to the database
+     db.session.commit()
+
+     return jsonify({'message': 'User successfully registered'}), 201
+
+
 
     @app.route('/admin-dashboard')
     @roles_required('admin')

@@ -1,9 +1,9 @@
-# main.py
+import os
 from flask import Flask
 from extensions import db, security
 import views
-import create_initial_data
 from flask_migrate import Migrate
+from create_initial_data import create_data
 
 def create_app():
     app = Flask(__name__)
@@ -13,10 +13,12 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
     app.config['SECURITY_PASSWORD_SALT'] = 'salty-password'
     app.config['SECURITY_TOKEN_AUTHENTICATION_HEADER'] = 'Authentication-Token'
-    app.config['UPLOAD_FOLDER'] = '/path/to/upload'  # Ensure this directory exists
+    app.config['UPLOAD_FOLDER'] = 'E:/Projects/Household Services/Uploaded files'
 
     db.init_app(app)
     migrate = Migrate(app, db)
+    if not os.path.exists(app.config['UPLOAD_FOLDER']):
+        os.makedirs(app.config['UPLOAD_FOLDER'])
 
     with app.app_context():
         from models import User, Role
@@ -27,13 +29,15 @@ def create_app():
 
         if not app.cli.commands:
             db.create_all()
-            create_initial_data.create_data(user_datastore)
-        
+
+    # Register the CLI command
+    app.cli.add_command(create_data)
+    
     app.config["WTF_CSRF_CHECK_DEFAULT"] = False
     app.config['SECURITY_CSRF_PROTECT_MECHANISMS'] = []
     app.config['SECURITY_CSRF_IGNORE_UNAUTH_ENDPOINTS'] = True
 
-    views.create_views(app, user_datastore)  # Correctly call create_views with user_datastore
+    views.create_views(app, user_datastore) 
 
     return app
 

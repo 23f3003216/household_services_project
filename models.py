@@ -1,6 +1,7 @@
 from extensions import db,security
 from flask_security import UserMixin, RoleMixin
 from flask_security.models import fsqla_v3 as fsqla
+from sqlalchemy.orm import relationship
 
 fsqla.FsModels.set_db_info(db)
 
@@ -11,14 +12,14 @@ class UserRoles(db.Model):
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(255), nullable=False, unique=True)
+    email = db.Column(db.String(255), nullable=False)
     password = db.Column(db.String(255))
     active = db.Column(db.Boolean, default=True)
     fs_uniquifier = db.Column(db.String(65), unique=True, nullable=False)
     roles = db.relationship('Role', secondary='user_roles', backref=db.backref('users', lazy='dynamic'))
 
-    customer_profile = db.relationship('Customer', uselist=False, backref='user')
-    professional_profile = db.relationship('ServiceProfessional', uselist=False, backref='user')
+    customer_profile = db.relationship('Customer', uselist=False, backref='user_profile')
+    professional_profile = db.relationship('ServiceProfessional', uselist=False, backref='user_profile')
 
 class Role(db.Model, RoleMixin):
     id = db.Column(db.Integer, primary_key=True)
@@ -33,6 +34,7 @@ class Customer(db.Model):
     address = db.Column(db.String(255), nullable=False)  
     pincode = db.Column(db.String(10), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    #user = relationship('User', backref='customer_profile')
 
 class ServiceProfessional(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -46,6 +48,7 @@ class ServiceProfessional(db.Model):
     date_created = db.Column(db.DateTime, default=db.func.current_timestamp())
     is_verified = db.Column(db.Boolean, default=False)  
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    #user = relationship('User', backref='service_professional_profile')
 
 class Service(db.Model):
     id = db.Column(db.Integer, primary_key=True)

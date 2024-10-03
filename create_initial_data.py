@@ -1,18 +1,20 @@
+from flask.cli import with_appcontext
 from flask_security import SQLAlchemySessionUserDatastore
 from extensions import db
 from flask_security.utils import hash_password
-from models import User,Role,Service
+from models import User, Role, Service
+import click
 
-
-def create_data(user_datastore : SQLAlchemySessionUserDatastore):
-    print("creating roles and users") 
-
+@click.command('create_data')
+@with_appcontext
+def create_data():
+    user_datastore = SQLAlchemySessionUserDatastore(db.session, User, Role)
+    
+    print("Creating roles and users")
 
     user_datastore.find_or_create_role(name='admin', description="Administrator")
     user_datastore.find_or_create_role(name='service_professional', description="Service Professional")
     user_datastore.find_or_create_role(name='customer', description="Customer")
-
-    # creating initial data
 
     if not user_datastore.find_user(email="admin@householdservices.com"):
         user_datastore.create_user(email="admin@householdservices.com", password=hash_password("adminpass"), roles=['admin'])
@@ -32,3 +34,4 @@ def create_data(user_datastore : SQLAlchemySessionUserDatastore):
     db.session.add(service3)
 
     db.session.commit()
+    print("Data creation successful.")

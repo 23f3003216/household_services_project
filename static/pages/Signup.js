@@ -20,6 +20,7 @@ const Signup = {
         <div class="form-group mb-3" v-if="showCommonFields">
           <input v-model="name" type="text" class="form-control" placeholder="Full Name" required/>
           <input v-model="address" type="text" class="form-control" placeholder="Address" required/>
+          <input v-model="phone" type="text" class="form-control" placeholder="Phone" required/>
           <input v-model="pincode" type="text" class="form-control" placeholder="Pincode" required/>
         </div>
 
@@ -52,6 +53,7 @@ const Signup = {
       role: "customer",
       name: "",
       address: "",
+      phone: "",
       pincode: "",
       serviceType: "",
       experience: 0,
@@ -73,6 +75,7 @@ const Signup = {
       formData.append("role", this.role);
       formData.append("name", this.name);
       formData.append("address", this.address);
+      formData.append("phone", this.phone);
       formData.append("pincode", this.pincode);
 
       if (this.role === 'service_professional') {
