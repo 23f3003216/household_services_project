@@ -163,29 +163,5 @@ def create_views(app: Flask, user_datastore):
             """
         )
 
-    @app.route('/services')
-    def services():
-        return render_template_string(
-            """
-                <h1>Our Services</h1>
-                <ul>
-                    <li>Plumbing - $100</li>
-                    <li>AC Servicing - $150</li>
-                    <li>Electrician - $120</li>
-                </ul>
-                <p><a href="/book-service">Book a Service</a></p>
-            """
-        )
 
-    @app.route('/book-service')
-    @roles_required('customer')
-    def book_service():
-        return render_template_string(
-            """
-                <h1>Book a Service</h1>
-                <p>Select the service you want to book.</p>
-                <p><a href="/services">View Services</a></p>
-                <p><a href="/logout">Logout</a></p>
-            """
-        )
 

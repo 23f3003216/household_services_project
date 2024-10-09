@@ -83,7 +83,7 @@ class ServiceResource(Resource):
         return {"message": "Service added successfully"}, 201
 
 
-api = Api(prefix='/api')
+api = Api()
 
-api.add_resource(ServiceRequestResource, '/service-requests')
-api.add_resource(ServiceResource, '/services')
+api.add_resource(ServiceRequestResource, '/api/service-requests')
+api.add_resource(ServiceResource, '/api/services')

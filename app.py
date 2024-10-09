@@ -4,6 +4,8 @@ from extensions import db, security
 import views
 from flask_migrate import Migrate
 from create_initial_data import create_data
+import resources
+from flask_restful import Api
 
 def create_app():
     app = Flask(__name__)
@@ -38,6 +40,7 @@ def create_app():
     app.config['SECURITY_CSRF_IGNORE_UNAUTH_ENDPOINTS'] = True
 
     views.create_views(app, user_datastore) 
+    resources.api.init_app(app)
 
     return app
 
