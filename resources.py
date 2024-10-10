@@ -57,7 +57,7 @@ service_fields = {
     'name': fields.String,
     'price': fields.Float,
     'description': fields.String,
-    'time_required': fields.Integer
+    'time_required': fields.String
 }
 
 class ServiceResource(Resource):
