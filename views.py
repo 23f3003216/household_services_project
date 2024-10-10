@@ -1,7 +1,7 @@
-# views.py
 from flask import flash, redirect, render_template, render_template_string, Flask, request, jsonify, url_for
-from flask_security import auth_required, current_user, roles_required
-from flask_security.utils import hash_password
+from flask_login import login_user
+from flask_security import auth_required, current_user, roles_required, roles_accepted, SQLAlchemyUserDatastore
+from flask_security.utils import hash_password, verify_password
 from werkzeug.utils import secure_filename
 from extensions import db, security
 import os
@@ -32,6 +32,30 @@ def create_views(app: Flask, user_datastore):
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], file.filename))
             flash('File successfully uploaded')
             return redirect(url_for('upload_file'))
+        
+    @app.route('/user-login', methods=['POST'])
+    def user_login():
+      data = request.get_json()
+      email = data.get('email')
+      password = data.get('password')
+      if not email or not password:
+        return jsonify({'message': 'Email or password not provided'}), 400
+
+      user = User.query.filter_by(email=email).first()
+
+      if not user:
+        return jsonify({'message': 'Invalid user'}), 400
+
+      if verify_password(password, user.password):
+        login_user(user)  
+
+        return jsonify({
+            'token': user.get_auth_token(),
+            'user': user.email,
+            'role': user.roles[0].name if user.roles else None
+        }), 200
+      else:
+        return jsonify({'message': 'Invalid password'}), 400
 
 
     @app.route('/profile')
