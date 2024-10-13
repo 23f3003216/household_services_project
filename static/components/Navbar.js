@@ -1,8 +1,10 @@
+import router from "../utils/router.js";
 const Navbar = {
     template: `
           <nav class= "h3 w-auto d-flex justify-content-around ">
               <router-link to='/'>Home</router-link>
               <router-link  to='/customer-dashboard'>Dashboard</router-link>
+              <router-link  to='/profile'>Profile</router-link>
               <router-link to='/login'>Login</router-link>
               <router-link to='/signup'>Signup</router-link>
               <a :href="logoutURL">Logout</a>

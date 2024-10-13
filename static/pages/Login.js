@@ -37,7 +37,7 @@ const Login = {
       if (res.ok) {
         const data = await res.json();
         console.log(data);
-        router.push("/profile");
+        router.push("/customer-dashboard");
       } else {
         const errorData = await res.json();
         console.error("Login failed:", errorData);
