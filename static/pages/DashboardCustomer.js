@@ -2,9 +2,22 @@ import ServiceResource from "../components/ServiceResource.js";
 
 const CustomerDashboard = {
   template: `
-    <div>
-      <h1 class="text-center">Customer Dashboard</h1>
-      <div class="d-flex flex-row p-5" v-for="service in allServices" :key="service.id">
+  <div>
+    <h1 class="text-center">Customer Dashboard</h1>
+    <div v-if="selectedService">
+      <h2>Professionals for {{ selectedService.name }}</h2>
+      <div class="d-flex flex-row p-5" v-for="professional in servicePackages" :key="professional.id">
+        <ServiceResource 
+          :name="professional.name" 
+          :price="professional.price" 
+          :description="professional.description" 
+          :time_required="professional.time_required"
+        />
+      </div>
+      <button @click="clearSelection">Back to Services</button>
+    </div>
+    <div v-else>
+      <div class="d-flex flex-row p-5" v-for="service in allServices" :key="service.id" @click="fetchServicePackages(service)">
         <ServiceResource 
           :name="service.name" 
           :price="service.price" 
@@ -13,7 +26,8 @@ const CustomerDashboard = {
         />
       </div>
     </div>
-  `,
+  </div>
+`,
   components: {
     ServiceResource,
   },
@@ -40,7 +54,7 @@ const CustomerDashboard = {
     async fetchServicePackages(service) {
       try {
         this.selectedService = service;
-        const response = await fetch(`/api/service-packages/${service.id}`); // Fetching packages for the selected service
+        const response = await fetch(`/api/service-packages/${service.id}`); 
         const data = await response.json();
         this.servicePackages = data;
       } catch (error) {
