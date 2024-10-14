@@ -16,6 +16,7 @@ const CustomerDashboard = {
           :phone="professional.phone"  
           :address="professional.address" 
           :pincode="professional.pincode" 
+          @bookService="bookService(professional)"
         />
       </div>
       <button @click="clearSelection">Back to Services</button>
@@ -63,6 +64,24 @@ const CustomerDashboard = {
         this.servicePackages = data;
       } catch (error) {
         console.error("Error fetching service packages:", error);
+      }
+    },
+    async bookService(professional) {
+      try {
+        const response = await fetch("/api/service-requests", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            service_id: this.selectedService.id,
+            professional_id: professional.id,
+          }),
+        });
+        const data = await response.json();
+        alert(data.message || "Service requested successfully");
+      } catch (error) {
+        console.error("Error booking service:", error);
       }
     },
     clearSelection() {

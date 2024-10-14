@@ -17,6 +17,7 @@ const ServiceResource = {
             <p class="card-text text-secondary">Address: {{ address }}</p>
             <p class="card-text text-secondary">Pincode: {{ pincode }}</p>
             <p class="card-text">{{ description }}</p>
+            <button class="btn btn-primary mt-3" @click="bookService">Book Service</button>
             <button class="btn btn-secondary mt-3" @click="closePopup">Close</button>
           </div>
         </div>
@@ -58,10 +59,13 @@ const ServiceResource = {
     },
     data() {
       return {
-        showPopup: false, // Controls whether the popup is visible
+        showPopup: false, 
       };
     },
     methods: {
+      bookService() {
+        this.$emit('bookService'); 
+      },
       openPopup() {
         this.showPopup = true;
       },

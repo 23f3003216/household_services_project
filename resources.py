@@ -1,3 +1,4 @@
+from flask_login import current_user
 from flask_restful import Resource, Api, reqparse, marshal_with, fields
 from models import Service, ServiceRequest, db, Customer, ServiceProfessional
 from flask_security import auth_required
@@ -6,7 +7,7 @@ from flask import request
 
 parser = reqparse.RequestParser()
 parser.add_argument('service_id', type=int, help="Service ID is required", required=True)
-parser.add_argument('customer_id', type=int, help="Customer ID is required", required=True)
+
 parser.add_argument('professional_id', type=int, help="Professional ID should be an integer")
 parser.add_argument('remarks', type=str, help="Remarks should be a string")
 
@@ -47,9 +48,16 @@ class ServiceRequestResource(Resource):
     def post(self):
         args = parser.parse_args()
         service_id = args['service_id']
-        customer_id = args['customer_id']
+        customer_id = current_user.id
         professional_id = args.get('professional_id')
         remarks = args.get('remarks')
+        if not professional_id:
+            return {"message": "Service Professional is required"}, 400
+
+        professional = ServiceProfessional.query.get(professional_id)
+        if not professional:
+            return {"message": "Service Professional not found"}, 404
+
 
         new_service_request = ServiceRequest(
             service_id=service_id,
