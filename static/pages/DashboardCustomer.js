@@ -19,7 +19,9 @@ const CustomerDashboard = {
   },
   data() {
     return {
-      allServices: [], // Array to hold the services fetched from the backend
+      allServices: [],
+      selectedService: null, 
+      servicePackages: [],
     };
   },
   mounted() {
@@ -28,12 +30,26 @@ const CustomerDashboard = {
   methods: {
     async fetchServices() {
       try {
-        const response = await fetch("/api/services"); // API to fetch all services
+        const response = await fetch("/api/services"); 
         const data = await response.json();
         this.allServices = data;
       } catch (error) {
         console.error("Error fetching services:", error);
       }
+    },
+    async fetchServicePackages(service) {
+      try {
+        this.selectedService = service;
+        const response = await fetch(`/api/service-packages/${service.id}`); // Fetching packages for the selected service
+        const data = await response.json();
+        this.servicePackages = data;
+      } catch (error) {
+        console.error("Error fetching service packages:", error);
+      }
+    },
+    clearSelection() {
+      this.selectedService = null;
+      this.servicePackages = [];
     },
   },
 };

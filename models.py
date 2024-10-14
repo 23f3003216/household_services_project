@@ -40,7 +40,7 @@ class ServiceProfessional(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     phone = db.Column(db.String(20), nullable=False)
-    service_type = db.Column(db.String(100), nullable=False) 
+    service_type = db.Column(db.Integer, db.ForeignKey('service.id'), nullable=False)
     experience = db.Column(db.Integer, nullable=False)
     address = db.Column(db.String(255), nullable=False) 
     pincode = db.Column(db.String(10), nullable=False)    
@@ -49,6 +49,7 @@ class ServiceProfessional(db.Model):
     is_verified = db.Column(db.Boolean, default=False)  
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     #user = relationship('User', backref='service_professional_profile')
+    service = db.relationship('Service', backref='professionals', lazy=True)
 
 class Service(db.Model):
     id = db.Column(db.Integer, primary_key=True)

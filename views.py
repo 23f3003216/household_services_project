@@ -6,7 +6,7 @@ from werkzeug.utils import secure_filename
 from extensions import db, security
 import os
 
-from models import Customer, ServiceProfessional,Role,User,UserRoles
+from models import Customer, Service, ServiceProfessional,Role,User,UserRoles
 
 ALLOWED_EXTENSIONS = {'pdf'}
 
@@ -107,10 +107,12 @@ def create_views(app: Flask, user_datastore):
 
     # Handle role-specific logic
      if role_name == 'service_professional':
-        service_type = data.get('service_type')
+        service_type_name = data.get('service_type')
         experience = data.get('experience')
+        service = Service.query.filter_by(name=service_type_name).first()
+        if service is None:
+                return jsonify({'message': 'Service not found'}), 404
 
-        # Check if documents are provided
         if 'documents' not in request.files:
             return jsonify({'message': 'Document upload is required'}), 400
 
@@ -122,7 +124,7 @@ def create_views(app: Flask, user_datastore):
         # Create a professional profile
         professional_profile = ServiceProfessional(
             name=name,
-            service_type=service_type,
+            service_type=service.id,
             experience=experience,
             address=address,
             phone=phone, 

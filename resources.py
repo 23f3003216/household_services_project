@@ -21,6 +21,14 @@ service_request_fields = {
     'remarks': fields.String,
 }
 
+package_fields = {
+    'id': fields.Integer,
+    'name': fields.String,
+    'price': fields.Float,
+    'description': fields.String,
+    'time_required': fields.String
+}
+
 
 class ServiceRequestResource(Resource):
 
@@ -81,9 +89,17 @@ class ServiceResource(Resource):
         db.session.add(new_service)
         db.session.commit()
         return {"message": "Service added successfully"}, 201
+    
+class ServicePackagesResource(Resource):
+    @marshal_with(package_fields)
+    def get(self, service_id):
+        service_professionals = ServiceProfessional.query.filter_by(service_type=service_id).all()
+        return service_professionals
+
 
 
 api = Api()
 
 api.add_resource(ServiceRequestResource, '/api/service-requests')
 api.add_resource(ServiceResource, '/api/services')
+api.add_resource(ServicePackagesResource, '/api/service-packages/<int:service_id>')

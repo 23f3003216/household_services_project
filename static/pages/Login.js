@@ -40,7 +40,8 @@ const Login = {
         router.push("/customer-dashboard");
       } else {
         const errorData = await res.json();
-        console.error("Login failed:", errorData);
+        console.error("Login failed:",
+          errorData);
       }
     },
   },
