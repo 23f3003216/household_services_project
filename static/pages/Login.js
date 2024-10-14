@@ -24,7 +24,7 @@ const Login = {
   methods: {
     async submitInfo() {
       const origin = window.location.origin;
-      const url = `${origin}/login`;
+      const url = `${origin}/user-login`;
       const res = await fetch(url, {
         method: "POST",
         headers: {
@@ -37,7 +37,13 @@ const Login = {
       if (res.ok) {
         const data = await res.json();
         console.log(data);
-        router.push("/customer-dashboard");
+        if (data.role === 'customer') {
+          router.push("/customer-dashboard");
+        } else if (data.role === 'service_professional') {
+          router.push("/service-dashboard");
+        } else {
+          console.error("Unknown role:", data.role);
+        }
       } else {
         const errorData = await res.json();
         console.error("Login failed:",
