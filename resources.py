@@ -62,7 +62,24 @@ class ServiceRequestResource(Resource):
         db.session.add(new_service_request)
         db.session.commit()
         return {"message": "Service request created successfully"}, 201
+    @auth_required('token', 'session')
+    def patch(self, request_id):
+        # Accept or reject logic based on request_id
+        action = request.json.get('action')
+        request_to_update = ServiceRequest.query.get(request_id)
+        
+        if not request_to_update:
+            return {"message": "Request not found"}, 404
 
+        if action == 'accept':
+            request_to_update.service_status = 'accepted'
+        elif action == 'reject':
+            request_to_update.service_status = 'rejected'
+        else:
+            return {"message": "Invalid action"}, 400
+        
+        db.session.commit()
+        return {"message": "Request status updated successfully"}, 200
 
 service_fields = {
     'id': fields.Integer,
