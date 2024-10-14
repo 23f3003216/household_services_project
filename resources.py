@@ -26,7 +26,11 @@ package_fields = {
     'name': fields.String,
     'price': fields.Float,
     'description': fields.String,
-    'time_required': fields.String
+    'time_required': fields.String,
+    'phone': fields.String,
+    'experience': fields.Integer,
+    'address': fields.String,
+    'pincode': fields.String,
 }
 
 
@@ -89,6 +93,8 @@ class ServiceResource(Resource):
         db.session.add(new_service)
         db.session.commit()
         return {"message": "Service added successfully"}, 201
+    
+    
     
 class ServicePackagesResource(Resource):
     @marshal_with(package_fields)

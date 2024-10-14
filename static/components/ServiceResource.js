@@ -4,15 +4,18 @@ const ServiceResource = {
         <div class="card shadow-sm p-4 mb-4 service-card" @click="openPopup">
           <div class="card-body">
             <h3 class="card-title text-center mb-3 text-primary text-truncate">{{ name }}</h3>
-            <p class="card-text text-secondary text-truncate">Price: ₹{{ price }}</p>
-            <p class="card-text text-secondary text-truncate">Time Required: {{ time_required }} mins</p>
+   
           </div>
         </div>
         <div v-if="showPopup" class="popup-overlay d-flex align-items-center justify-content-center">
           <div class="popup-content card shadow p-4">
             <h3 class="card-title text-center mb-3 text-primary">{{ name }}</h3>
             <p class="card-text text-secondary">Price: ₹{{ price }}</p>
-            <p class="card-text text-secondary">Time Required: {{ time_required }} mins</p>
+            <p class="card-text text-secondary">Time Required: {{ time_required }}</p>
+            <p class="card-text text-secondary">Experience: {{ experience }} years</p>
+            <p class="card-text text-secondary">Phone: {{ phone }}</p>  
+            <p class="card-text text-secondary">Address: {{ address }}</p>
+            <p class="card-text text-secondary">Pincode: {{ pincode }}</p>
             <p class="card-text">{{ description }}</p>
             <button class="btn btn-secondary mt-3" @click="closePopup">Close</button>
           </div>
@@ -33,6 +36,22 @@ const ServiceResource = {
         required: true,
       },
       time_required: {
+        type: Number,
+        required: true,
+      },
+      experience: { 
+        type: Number,
+        required: true,
+      },
+      phone: { 
+        type: String,
+        required: true,
+      },
+      address: {  
+        type: String,
+        required: true,
+      },
+      pincode: {  
         type: Number,
         required: true,
       },

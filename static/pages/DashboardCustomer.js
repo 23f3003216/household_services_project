@@ -12,6 +12,10 @@ const CustomerDashboard = {
           :price="professional.price" 
           :description="professional.description" 
           :time_required="professional.time_required"
+          :experience="professional.experience"  
+          :phone="professional.phone"  
+          :address="professional.address" 
+          :pincode="professional.pincode" 
         />
       </div>
       <button @click="clearSelection">Back to Services</button>
