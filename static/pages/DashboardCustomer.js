@@ -4,7 +4,19 @@ const CustomerDashboard = {
   template: `
   <div>
     <h1 class="text-center">Customer Dashboard</h1>
+    
+    <!-- Search Functionality -->
+    <div class="search-bar mb-3">
+      <label for="searchType">Search by:</label>
+      <select v-model="searchType" id="searchType" class="form-control d-inline w-auto">
+        <option value="service_name">Service Name</option>
+      </select>
+      <input type="text" v-model="searchText" placeholder="Enter search text" class="form-control d-inline w-auto" />
+      <button @click="performSearch" class="btn btn-primary">Search</button>
+    </div>
+    
     <button @click="fetchServiceHistory" class="btn btn-info mb-3">View Service History</button>
+    
     <div v-if="serviceHistory.length">
       <h2>Service History</h2>
       <div class="table-responsive">
@@ -30,6 +42,7 @@ const CustomerDashboard = {
         </table>
       </div>
     </div>
+    
     <div v-if="selectedService">
       <h2>Professionals for {{ selectedService.name }}</h2>
       <div class="d-flex flex-row p-5" v-for="professional in servicePackages" :key="professional.id">
@@ -41,14 +54,14 @@ const CustomerDashboard = {
           :experience="professional.experience"  
           :phone="professional.phone"  
           :address="professional.address" 
-          :pincode="professional.pincode" 
           @bookService="bookService(professional)"
         />
       </div>
       <button @click="clearSelection">Back to Services</button>
     </div>
+    
     <div v-else>
-      <div class="d-flex flex-row p-5" v-for="service in allServices" :key="service.id" @click="fetchServicePackages(service)">
+      <div class="d-flex flex-row p-5" v-for="service in filteredServices" :key="service.id" @click="fetchServicePackages(service)">
         <ServiceResource 
           :name="service.name" 
           :price="service.price" 
@@ -65,9 +78,12 @@ const CustomerDashboard = {
   data() {
     return {
       allServices: [],
+      filteredServices: [],
       selectedService: null, 
       servicePackages: [],
-      serviceHistory: []
+      serviceHistory: [],
+      searchText: '',
+      searchType: 'service_name',
     };
   },
   mounted() {
@@ -79,8 +95,18 @@ const CustomerDashboard = {
         const response = await fetch("/api/services"); 
         const data = await response.json();
         this.allServices = data;
+        this.filteredServices = data; 
       } catch (error) {
         console.error("Error fetching services:", error);
+      }
+    },
+    performSearch() {
+      if (this.searchText) {
+        this.filteredServices = this.allServices.filter(service => {
+          return service.name.toLowerCase().includes(this.searchText.toLowerCase());
+        });
+      } else {
+        this.filteredServices = this.allServices; // Reset to all services if search text is empty
       }
     },
     async fetchServicePackages(service) {
