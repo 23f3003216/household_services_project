@@ -4,6 +4,32 @@ const CustomerDashboard = {
   template: `
   <div>
     <h1 class="text-center">Customer Dashboard</h1>
+    <button @click="fetchServiceHistory" class="btn btn-info mb-3">View Service History</button>
+    <div v-if="serviceHistory.length">
+      <h2>Service History</h2>
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Service Name</th>
+              <th>Professional Name</th>
+              <th>Phone</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="history in serviceHistory" :key="history.id">
+              <td>{{ history.id }}</td>
+              <td>{{ history.service_name }}</td>
+              <td>{{ history.professional_name }}</td>
+              <td>{{ history.phone }}</td>
+              <td>{{ history.status }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
     <div v-if="selectedService">
       <h2>Professionals for {{ selectedService.name }}</h2>
       <div class="d-flex flex-row p-5" v-for="professional in servicePackages" :key="professional.id">
@@ -41,6 +67,7 @@ const CustomerDashboard = {
       allServices: [],
       selectedService: null, 
       servicePackages: [],
+      serviceHistory: []
     };
   },
   mounted() {
@@ -82,6 +109,15 @@ const CustomerDashboard = {
         alert(data.message || "Service requested successfully");
       } catch (error) {
         console.error("Error booking service:", error);
+      }
+    },
+    async fetchServiceHistory() {
+      try {
+        const response = await fetch("/api/service-history"); 
+        const data = await response.json();
+        this.serviceHistory = data.service_history; 
+      } catch (error) {
+        console.error("Error fetching service history:", error);
       }
     },
     clearSelection() {

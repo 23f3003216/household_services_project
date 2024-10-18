@@ -126,6 +126,32 @@ class ServicePackagesResource(Resource):
     def get(self, service_id):
         service_professionals = ServiceProfessional.query.filter_by(service_type=service_id).all()
         return service_professionals
+    
+class ServiceHistoryResource(Resource):
+    @auth_required('token', 'session')
+    def get(self):
+        customer_id = current_user.id
+        service_history = db.session.query(
+            ServiceRequest.id,
+            Service.name.label("service_name"),
+            ServiceProfessional.name.label("professional_name"),
+            ServiceProfessional.phone,
+            ServiceRequest.service_status
+        ).join(Service, Service.id == ServiceRequest.service_id) \
+         .join(ServiceProfessional, ServiceProfessional.id == ServiceRequest.professional_id) \
+         .filter(ServiceRequest.customer_id == customer_id).all()
+
+        history_list = []
+        for history in service_history:
+            history_list.append({
+                "id": history.id,
+                "service_name": history.service_name,
+                "professional_name": history.professional_name,
+                "phone": history.phone,
+                "status": history.service_status
+            })
+        
+        return {"service_history": history_list}, 200
 
 
 
@@ -134,3 +160,4 @@ api = Api()
 api.add_resource(ServiceRequestResource, '/api/service-requests')
 api.add_resource(ServiceResource, '/api/services')
 api.add_resource(ServicePackagesResource, '/api/service-packages/<int:service_id>')
+api.add_resource(ServiceHistoryResource, '/api/service-history')
