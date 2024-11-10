@@ -48,15 +48,27 @@ def create_views(app: Flask, user_datastore):
 
       if verify_password(password, user.password):
         login_user(user)  
+        professional_id = None
+        if user.roles and user.roles[0].name == 'service_professional':
+            professional_profile = ServiceProfessional.query.filter_by(user_id=user.id).first()
+            if professional_profile:
+                professional_id = professional_profile.id  # Adjust field name if needed
 
-        return jsonify({
+        # Return the response, include professional_id only for service professionals
+        response = {
             'token': user.get_auth_token(),
             'user': user.email,
             'role': user.roles[0].name if user.roles else None
-        }), 200
+        }
+
+        if professional_id:  # Only include professional_id if the user is a service professional
+            response['professional_id'] = professional_id
+
+        return jsonify(response), 200
       else:
         return jsonify({'message': 'Invalid password'}), 400
 
+        
 
     @app.route('/profile')
     @auth_required('token', 'session')

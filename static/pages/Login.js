@@ -37,17 +37,24 @@ const Login = {
       if (res.ok) {
         const data = await res.json();
         console.log(data);
+
+        // Check the user role and handle the response accordingly
         if (data.role === 'customer') {
           router.push("/customer-dashboard");
         } else if (data.role === 'service_professional') {
+          // Save the professional ID in localStorage
+          if (data.professional_id) {
+            localStorage.setItem('professional_id', data.professional_id);
+          }
+
+          // Redirect to the service professional dashboard
           router.push("/service-dashboard");
         } else {
           console.error("Unknown role:", data.role);
         }
       } else {
         const errorData = await res.json();
-        console.error("Login failed:",
-          errorData);
+        console.error("Login failed:", errorData);
       }
     },
   },

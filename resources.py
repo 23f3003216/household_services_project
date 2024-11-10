@@ -2,6 +2,7 @@ from flask_login import current_user
 from flask_restful import Resource, Api, reqparse, marshal_with, fields
 from models import Service, ServiceRequest, db, Customer, ServiceProfessional
 from flask_security import auth_required
+from sqlalchemy.orm import joinedload
 from flask import request
 
 
@@ -20,6 +21,14 @@ service_request_fields = {
     'date_of_completion': fields.DateTime,
     'service_status': fields.String,
     'remarks': fields.String,
+}
+
+service_request_fields1 = {
+    'service_id': fields.Integer(attribute='service.id'),
+    'service_name': fields.String(attribute='service.name'),
+    'customer_name': fields.String(attribute='customer.name'),
+    'phone': fields.String(attribute='customer.phone'),
+    'status': fields.String(attribute='service_status')
 }
 
 package_fields = {
@@ -119,6 +128,24 @@ class ServiceResource(Resource):
         db.session.commit()
         return {"message": "Service added successfully"}, 201
     
+class ServiceByProfessionalResource(Resource):
+    
+    @auth_required('token', 'session')
+    @marshal_with(service_request_fields1)
+    def get(self, professional_id):
+        # Use eager loading with joinedload to fetch related data for Service and Customer
+        professional_services = ServiceRequest.query.options(
+            joinedload(ServiceRequest.service),    # Load related Service data
+            joinedload(ServiceRequest.customer)    # Load related Customer data
+        ).filter_by(professional_id=professional_id).all()
+
+        if not professional_services:
+            return {"message": "No services found for this professional."}, 404
+        
+        # Returns the queried data as a structured JSON response
+        return professional_services, 200
+
+
     
     
 class ServicePackagesResource(Resource):
@@ -161,3 +188,4 @@ api.add_resource(ServiceRequestResource, '/api/service-requests')
 api.add_resource(ServiceResource, '/api/services')
 api.add_resource(ServicePackagesResource, '/api/service-packages/<int:service_id>')
 api.add_resource(ServiceHistoryResource, '/api/service-history')
+api.add_resource(ServiceByProfessionalResource, '/api/service-requests/professional/<int:professional_id>') 
