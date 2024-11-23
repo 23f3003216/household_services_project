@@ -1,6 +1,6 @@
 from flask_login import current_user
 from flask_restful import Resource, Api, reqparse, marshal_with, fields
-from models import Service, ServiceRequest, db, Customer, ServiceProfessional
+from models import Service, ServiceRequest, User, db, Customer, ServiceProfessional
 from flask_security import auth_required
 from sqlalchemy.orm import joinedload
 from flask import request
@@ -179,6 +179,43 @@ class ServiceHistoryResource(Resource):
             })
         
         return {"service_history": history_list}, 200
+    
+
+class AllUsersResource(Resource):
+    def get(self):
+        """Fetch all users without any restrictions."""
+        users = User.query.all()
+        if not users:
+            return {"message": "No users found."}, 404
+        
+        user_list = [
+            {
+                "id": user.id,
+                "email": user.email,
+                "active": user.active,
+                "roles": [role.name for role in user.roles]
+            }
+            for user in users
+        ]
+        return {"users": user_list}, 200
+class UserStatusResource(Resource):
+    def put(self, user_id, action):
+        """Block or unblock a user"""
+        user = User.query.get(user_id)
+        if not user:
+            return {"message": "User not found"}, 404
+
+        if action == 'block':
+            user.active = 0
+            message = "User blocked successfully."
+        elif action == 'unblock':
+            user.active = 1
+            message = "User unblocked successfully."
+        else:
+            return {"message": "Invalid action. Use 'block' or 'unblock'."}, 400
+
+        db.session.commit()
+        return {"message": message}, 200
 
 
 
@@ -189,3 +226,5 @@ api.add_resource(ServiceResource, '/api/services')
 api.add_resource(ServicePackagesResource, '/api/service-packages/<int:service_id>')
 api.add_resource(ServiceHistoryResource, '/api/service-history')
 api.add_resource(ServiceByProfessionalResource, '/api/service-requests/professional/<int:professional_id>') 
+api.add_resource(AllUsersResource, '/api/all-users')
+api.add_resource(UserStatusResource, '/api/users/<int:user_id>/<string:action>')

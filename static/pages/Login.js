@@ -42,13 +42,13 @@ const Login = {
         if (data.role === 'customer') {
           router.push("/customer-dashboard");
         } else if (data.role === 'service_professional') {
-          // Save the professional ID in localStorage
           if (data.professional_id) {
             localStorage.setItem('professional_id', data.professional_id);
           }
 
-          // Redirect to the service professional dashboard
           router.push("/service-dashboard");
+        } else if (data.role === 'admin') {
+          router.push("/admin-dashboard");
         } else {
           console.error("Unknown role:", data.role);
         }
