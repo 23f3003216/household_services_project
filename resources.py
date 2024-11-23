@@ -114,8 +114,6 @@ class ServiceResource(Resource):
         all_services = Service.query.all()
         return all_services
 
-
-    @auth_required('token', 'session')
     def post(self):
         data = request.get_json()
         new_service = Service(
@@ -127,6 +125,25 @@ class ServiceResource(Resource):
         db.session.add(new_service)
         db.session.commit()
         return {"message": "Service added successfully"}, 201
+    def put(self, service_id):
+        service = Service.query.get(service_id) 
+        if not service: 
+            return {"message": "Service not found"}, 404
+        data = request.get_json() 
+        service.name = data.get('name', service.name) 
+        service.price = data.get('price', service.price) 
+        service.description = data.get('description', service.description)
+        service.time_required = data.get('time_required', service.time_required) 
+        db.session.commit() 
+        return {"message": "Service updated successfully"}, 200
+    def delete(self, service_id):
+        service = Service.query.get(service_id) 
+        if not service: 
+            return {"message": "Service not found"}, 404 
+        db.session.delete(service)
+        db.session.commit() 
+        return {"message": "Service deleted successfully"},200
+    
     
 class ServiceByProfessionalResource(Resource):
     
@@ -216,13 +233,14 @@ class UserStatusResource(Resource):
 
         db.session.commit()
         return {"message": message}, 200
+        
 
 
 
 api = Api()
 
 api.add_resource(ServiceRequestResource, '/api/service-requests')
-api.add_resource(ServiceResource, '/api/services')
+api.add_resource(ServiceResource, '/api/services', '/api/services/<int:service_id>')
 api.add_resource(ServicePackagesResource, '/api/service-packages/<int:service_id>')
 api.add_resource(ServiceHistoryResource, '/api/service-history')
 api.add_resource(ServiceByProfessionalResource, '/api/service-requests/professional/<int:professional_id>') 

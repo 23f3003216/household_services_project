@@ -1,3 +1,5 @@
+import router from "../utils/router.js";
+
 const AdminDashboard = {
   template: `
   <div>
@@ -48,6 +50,24 @@ const AdminDashboard = {
     <div v-else>
       <p>No users found.</p>
     </div>
+
+    <!-- Service Management -->
+    <h2>Service Management</h2>
+    <form @submit.prevent="addService">
+      <input v-model="newService.name" placeholder="Service Name" required />
+      <input v-model="newService.price" placeholder="Service Price" required />
+      <input v-model="newService.time_required" placeholder="Time Required" required />
+      <textarea v-model="newService.description" placeholder="Service Description" required></textarea>
+      <button type="submit" class="btn btn-primary">Add Service</button>
+    </form>
+
+    <ul>
+      <li v-for="service in services" :key="service.id">
+        {{ service.name }} - {{ service.description }}
+        <button @click="updateService(service.id)" class="btn btn-warning">Update</button>
+        <button @click="deleteService(service.id)" class="btn btn-danger">Delete</button>
+      </li>
+    </ul>
   </div>
   `,
   data() {
@@ -56,10 +76,18 @@ const AdminDashboard = {
       filteredUsers: [],
       searchField: 'email',
       searchText: '',
+      services: [],
+      newService: {
+        name: '',
+        price: '',
+        time_required: '',
+        description: '',
+      },
     };
   },
   mounted() {
     this.fetchUsers();
+    this.fetchServices();
   },
   methods: {
     async fetchUsers() {
@@ -107,6 +135,78 @@ const AdminDashboard = {
       } catch (error) {
         console.error("Error updating user status:", error);
         alert("An error occurred while updating user status.");
+      }
+    },
+    async fetchServices() {
+      try {
+        const response = await fetch('/api/services', {
+          method: 'GET',
+        });
+        if (response.ok) {
+          this.services = await response.json();
+        } else {
+          alert('Error fetching services');
+        }
+      } catch (error) {
+        console.error('Error fetching services:', error);
+        alert('Error fetching services');
+      }
+    },
+    async addService() {
+      try {
+        const response = await fetch('/api/services', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(this.newService),
+        });
+        const result = await response.json();
+        alert(result.message);
+        this.newService.name = '';
+        this.newService.price = '';
+        this.newService.time_required = '';
+        this.newService.description = '';
+        this.fetchServices();
+      } catch (error) {
+        console.error('Error adding service:', error);
+        alert('Error adding service');
+      }
+    },
+    async updateService(serviceId) {
+      const updatedService = prompt(
+        'Enter updated service details (name, price, time_required, description):'
+      );
+      if (!updatedService) return;
+
+      try {
+        const [name, price, time_required, description] = updatedService.split(',');
+        const response = await fetch(`/api/services/${serviceId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ name, price, time_required, description }),
+        });
+        const result = await response.json();
+        alert(result.message);
+        this.fetchServices();
+      } catch (error) {
+        console.error('Error updating service:', error);
+        alert('Error updating service');
+      }
+    },
+    async deleteService(serviceId) {
+      try {
+        const response = await fetch(`/api/services/${serviceId}`, {
+          method: 'DELETE',
+        });
+        const result = await response.json();
+        alert(result.message);
+        this.fetchServices();
+      } catch (error) {
+        console.error('Error deleting service:', error);
+        alert('Error deleting service');
       }
     },
   },
