@@ -1,19 +1,26 @@
-from flask import flash, redirect, render_template, render_template_string, Flask, request, jsonify, url_for
+from functools import cache
+from flask_caching import Cache
+from flask import app, flash, redirect, render_template, render_template_string, Flask, request, jsonify, url_for
 from flask_login import login_user
 from flask_security import auth_required, current_user, roles_required, roles_accepted, SQLAlchemyUserDatastore
 from flask_security.utils import hash_password, verify_password
 from werkzeug.utils import secure_filename
 from extensions import db, security
+from datetime import datetime
 import os
-
 from models import Customer, Service, ServiceProfessional,Role,User,UserRoles
-
+cache = cache
 ALLOWED_EXTENSIONS = {'pdf'}
+
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def create_views(app: Flask, user_datastore):
+def create_views(app: Flask, user_datastore,cache):
+    @app.get('/cache')
+    @cache.cached(timeout=5)
+    def cache_view():
+        return {'time': str(datetime.now())}
     
     @app.route('/')
     def home():
@@ -200,6 +207,8 @@ def create_views(app: Flask, user_datastore):
                 <p><a href="/logout">Logout</a></p>
             """
         )
+    
+
 
 
 
