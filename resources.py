@@ -5,7 +5,6 @@ from flask_security import auth_required
 from sqlalchemy.orm import joinedload
 from flask import request
 
-
 parser = reqparse.RequestParser()
 parser.add_argument('service_id', type=int, help="Service ID is required", required=True)
 
@@ -50,8 +49,11 @@ class ServiceRequestResource(Resource):
     @auth_required('token', 'session')
     @marshal_with(service_request_fields)
     def get(self):
-        all_requests = ServiceRequest.query.all()
-        return all_requests
+        from app import cache
+        @cache.cached(timeout=60) 
+        def cached_all_requests():
+         return ServiceRequest.query.all()
+        return cached_all_requests()
 
     @auth_required('token', 'session')
     def post(self):
@@ -111,8 +113,11 @@ class ServiceResource(Resource):
  
     @marshal_with(service_fields)
     def get(self):
-        all_services = Service.query.all()
-        return all_services
+        from app import cache
+        @cache.cached(timeout=60) 
+        def cached_all_services():
+           return Service.query.all()
+        return cached_all_services()
 
     def post(self):
         data = request.get_json()
@@ -146,16 +151,17 @@ class ServiceResource(Resource):
     
     
 class ServiceByProfessionalResource(Resource):
-    
     @auth_required('token', 'session')
     @marshal_with(service_request_fields1)
     def get(self, professional_id):
-        # Use eager loading with joinedload to fetch related data for Service and Customer
-        professional_services = ServiceRequest.query.options(
-            joinedload(ServiceRequest.service),    # Load related Service data
-            joinedload(ServiceRequest.customer)    # Load related Customer data
+        from app import cache
+        @cache.cached(timeout=60)
+        def cached_professional_services():
+          return ServiceRequest.query.options(
+            joinedload(ServiceRequest.service),   
+            joinedload(ServiceRequest.customer)    
         ).filter_by(professional_id=professional_id).all()
-
+        professional_services = cached_professional_services()
         if not professional_services:
             return {"message": "No services found for this professional."}, 404
         
@@ -168,14 +174,19 @@ class ServiceByProfessionalResource(Resource):
 class ServicePackagesResource(Resource):
     @marshal_with(package_fields)
     def get(self, service_id):
-        service_professionals = ServiceProfessional.query.filter_by(service_type=service_id).all()
-        return service_professionals
+        from app import cache 
+        @cache.cached(timeout=60)
+        def cached_service_professionals():
+           return ServiceProfessional.query.filter_by(service_type=service_id).all()
+        return cached_service_professionals()
     
 class ServiceHistoryResource(Resource):
     @auth_required('token', 'session')
     def get(self):
-        customer_id = current_user.id
-        service_history = db.session.query(
+        from app import cache
+        @cache.cached(timeout=60) 
+        def cached_service_history(customer_id):
+           return db.session.query(
             ServiceRequest.id,
             Service.name.label("service_name"),
             ServiceProfessional.name.label("professional_name"),
@@ -184,6 +195,8 @@ class ServiceHistoryResource(Resource):
         ).join(Service, Service.id == ServiceRequest.service_id) \
          .join(ServiceProfessional, ServiceProfessional.id == ServiceRequest.professional_id) \
          .filter(ServiceRequest.customer_id == customer_id).all()
+        customer_id = current_user.id 
+        service_history = cached_service_history(customer_id)
 
         history_list = []
         for history in service_history:
@@ -200,7 +213,9 @@ class ServiceHistoryResource(Resource):
 
 class AllUsersResource(Resource):
     def get(self):
-        """Fetch all users without any restrictions."""
+       from app import cache
+       @cache.cached(timeout=60) 
+       def cached_users():
         users = User.query.all()
         if not users:
             return {"message": "No users found."}, 404
@@ -215,6 +230,7 @@ class AllUsersResource(Resource):
             for user in users
         ]
         return {"users": user_list}, 200
+       return cached_users()
 class UserStatusResource(Resource):
     def put(self, user_id, action):
         """Block or unblock a user"""

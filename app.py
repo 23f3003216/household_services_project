@@ -7,7 +7,7 @@ from create_initial_data import create_data
 import resources
 from flask_restful import Api
 from celery_config import celery
-from flask_caching import Cache
+from cache_config import init_cache
 
 
 def create_app():
@@ -19,15 +19,10 @@ def create_app():
     app.config['SECURITY_PASSWORD_SALT'] = 'salty-password'
     app.config['SECURITY_TOKEN_AUTHENTICATION_HEADER'] = 'Authentication-Token'
     app.config['UPLOAD_FOLDER'] = 'E:/Projects/Household Services/Uploaded files'
-    app.config["CACHE_TYPE"] = "RedisCache"  
-    app.config["CACHE_DEFAULT_TIMEOUT"] = 30
-    app.config['CACHE_REDIS_HOST'] = "localhost"
-    app.config['CACHE_REDIS_PORT'] = 6379
-    app.config['CACHE_REDIS_DB'] = 0
-    app.config['CACHE_REDIS_URL'] = "redis://localhost:6379/0"
-    cache = Cache(app)
+
     celery.conf.update(app.config)
-    cache = Cache(app)
+    cache = init_cache(app)
+
 
     db.init_app(app)
     migrate = Migrate(app, db)
