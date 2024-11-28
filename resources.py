@@ -4,6 +4,7 @@ from models import Service, ServiceRequest, User, db, Customer, ServiceProfessio
 from flask_security import auth_required
 from sqlalchemy.orm import joinedload
 from flask import request
+from flask import current_app
 
 parser = reqparse.RequestParser()
 parser.add_argument('service_id', type=int, help="Service ID is required", required=True)
@@ -49,7 +50,7 @@ class ServiceRequestResource(Resource):
     @auth_required('token', 'session')
     @marshal_with(service_request_fields)
     def get(self):
-        from app import cache
+        cache = current_app.cache
         @cache.cached(timeout=60) 
         def cached_all_requests():
          return ServiceRequest.query.all()
@@ -113,7 +114,7 @@ class ServiceResource(Resource):
  
     @marshal_with(service_fields)
     def get(self):
-        from app import cache
+        cache = current_app.cache
         @cache.cached(timeout=60) 
         def cached_all_services():
            return Service.query.all()
@@ -154,7 +155,7 @@ class ServiceByProfessionalResource(Resource):
     @auth_required('token', 'session')
     @marshal_with(service_request_fields1)
     def get(self, professional_id):
-        from app import cache
+        cache = current_app.cache
         @cache.cached(timeout=60)
         def cached_professional_services():
           return ServiceRequest.query.options(
@@ -174,7 +175,7 @@ class ServiceByProfessionalResource(Resource):
 class ServicePackagesResource(Resource):
     @marshal_with(package_fields)
     def get(self, service_id):
-        from app import cache 
+        cache = current_app.cache
         @cache.cached(timeout=60)
         def cached_service_professionals():
            return ServiceProfessional.query.filter_by(service_type=service_id).all()
@@ -183,7 +184,7 @@ class ServicePackagesResource(Resource):
 class ServiceHistoryResource(Resource):
     @auth_required('token', 'session')
     def get(self):
-        from app import cache
+        cache = current_app.cache
         @cache.cached(timeout=60) 
         def cached_service_history(customer_id):
            return db.session.query(
@@ -213,7 +214,7 @@ class ServiceHistoryResource(Resource):
 
 class AllUsersResource(Resource):
     def get(self):
-       from app import cache
+       cache = current_app.cache
        @cache.cached(timeout=60) 
        def cached_users():
         users = User.query.all()

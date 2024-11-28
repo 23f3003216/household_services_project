@@ -6,10 +6,11 @@ from flask_migrate import Migrate
 from create_initial_data import create_data
 import resources
 from flask_restful import Api
-from celery_config import celery
+from celery_config import celery, make_celery
 from cache_config import init_cache
+from tasks import add
 
-
+celery_app = make_celery(__name__) 
 def create_app():
     app = Flask(__name__)
 
@@ -19,6 +20,8 @@ def create_app():
     app.config['SECURITY_PASSWORD_SALT'] = 'salty-password'
     app.config['SECURITY_TOKEN_AUTHENTICATION_HEADER'] = 'Authentication-Token'
     app.config['UPLOAD_FOLDER'] = 'E:/Projects/Household Services/Uploaded files'
+    app.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/0'
+    app.config['CELERY_RESULT_BACKEND'] ='redis://localhost:6379/1'
 
     celery.conf.update(app.config)
     cache = init_cache(app)
@@ -49,6 +52,13 @@ def create_app():
 
     views.create_views(app, user_datastore,cache) 
     resources.api.init_app(app)
+    celery_app = make_celery(app) 
+    app.celery_app = celery_app 
+    
+    @app.route('/celery') 
+    def celery_route(): 
+        add.delay(4, 6) 
+        return "Task has been sent to Celery.",
 
 
     return app

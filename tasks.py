@@ -1,8 +1,16 @@
-from celery_config import celery
+import time
+from celery import shared_task
+from celery_config import make_celery
 from models import ServiceProfessional, ServiceRequest
 from flask import Flask
 
 app = Flask(__name__)
+celery = make_celery(app)
+
+@shared_task(ignore_result=False)
+def add(x, y):
+    time.sleep(10)
+    return x + y
 
 @celery.task
 def send_daily_reminders():

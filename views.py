@@ -8,6 +8,7 @@ from werkzeug.utils import secure_filename
 from extensions import db, security
 from datetime import datetime
 import os
+from tasks import add
 from models import Customer, Service, ServiceProfessional,Role,User,UserRoles
 cache = cache
 ALLOWED_EXTENSIONS = {'pdf'}
@@ -25,6 +26,10 @@ def create_views(app: Flask, user_datastore,cache):
     @app.route('/')
     def home():
         return render_template('index.html') 
+    @app.get('/celery')
+    def celery():
+     add.delay(4,6)
+     return 200
     
     @app.route('/upload', methods=['POST'])
     def upload_file():
