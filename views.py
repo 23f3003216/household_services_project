@@ -26,10 +26,10 @@ def create_views(app: Flask, user_datastore,cache):
     @app.route('/')
     def home():
         return render_template('index.html') 
-    @app.get('/celery')
-    def celery():
-     add.delay(4,6)
-     return 'job sent' ,200
+    @app.route('/test_celery') 
+    def test_celery():
+         result = add.delay(4, 6) 
+         return f"Task result: {result.get()}"
     
     @app.route('/upload', methods=['POST'])
     def upload_file():

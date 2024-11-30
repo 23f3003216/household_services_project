@@ -53,11 +53,7 @@ def create_app():
     resources.api.init_app(app)
     celery_app = make_celery(app) 
     app.celery_app = celery_app 
-    
-    @app.route('/celery') 
-    def celery_route(): 
-        add.delay(4, 6) 
-        return "Task has been sent to Celery.",
+
 
 
     return app

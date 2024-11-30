@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Monthly Activity Report</title>
+</head>
+<body>
+    <h1>Monthly Activity Report</h1>
+    <p>Dear {{ name }},</p>
+    <p>Here is your activity report for the past month.</p>
+    <ul>
+        <li>Total services requested: {{ total_requested }}</li>
+        <li>Total services closed: {{ total_closed }}</li>
+
+    </ul>
+    <p>Thank you for your continued support.</p>
+</body>
+</html>
