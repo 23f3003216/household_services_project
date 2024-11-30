@@ -73,3 +73,22 @@ def export_service_details():
         output.headers["Content-Disposition"] = "attachment; filename=service_details.csv"
         output.headers["Content-type"] = "text/csv"
         return output
+    
+@shared_task
+def export_service_details():
+    with app.app_context():
+        services = ServiceRequest.query.filter_by(service_status='closed').all()
+        si = StringIO()
+        cw = csv.writer(si)
+        csv.writer(si) 
+        cw.writerow(['service_id', 'customer_id', 'professional_id', 'date_of_request', 'remarks'])
+        for service in services:
+            cw.writerow([service.id, service.customer_id, service.professional_id, service.date_of_request,service.remarks])
+            msg = Message(subject="Service Requests CSV Export", sender="your-email@example.com", 
+                          recipients=["admin@householdservices.com"], body="Please find the attached CSV file of service requests.", 
+                          attachments=[('service_requests.csv', 'text/csv', si.getvalue())])
+            mail.send(msg)
+                          
+
+
+

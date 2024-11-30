@@ -1,6 +1,6 @@
 from functools import cache
 from flask_caching import Cache
-from flask import app, flash, redirect, render_template, render_template_string, Flask, request, jsonify, url_for
+from flask import current_app, flash, redirect, render_template, render_template_string, Flask, request, jsonify, url_for
 from flask_login import login_user
 from flask_security import auth_required, current_user, roles_required, roles_accepted, SQLAlchemyUserDatastore
 from flask_security.utils import hash_password, verify_password
@@ -8,7 +8,7 @@ from werkzeug.utils import secure_filename
 from extensions import db, security
 from datetime import datetime
 import os
-from tasks import add
+from tasks import add, export_service_details
 from models import Customer, Service, ServiceProfessional,Role,User,UserRoles
 cache = cache
 ALLOWED_EXTENSIONS = {'pdf'}
@@ -28,8 +28,21 @@ def create_views(app: Flask, user_datastore,cache):
         return render_template('index.html') 
     @app.route('/test_celery') 
     def test_celery():
-         result = add.delay(4, 6) 
-         return f"Task result: {result.get()}"
+        try:
+            result = add.delay(4, 6) 
+            return f"Task result: {result.get()}"
+        except Exception as e:
+             return str(e), 500
+    @app.route('/export_csv', methods=['GET']) 
+  
+    def export_csv(): 
+        export_service_details.delay()
+        return "CSV export has been triggered. You will receive an alert once it's done."
+        
+    
+             
+         
+        
     
     @app.route('/upload', methods=['POST'])
     def upload_file():
