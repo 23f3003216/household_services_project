@@ -9,7 +9,6 @@ from flask_restful import Api
 from celery_config import celery, make_celery
 from cache_config import init_cache
 from tasks import add
-
 celery_app = make_celery(__name__) 
 def create_app():
     app = Flask(__name__)

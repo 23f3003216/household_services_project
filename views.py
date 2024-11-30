@@ -29,7 +29,7 @@ def create_views(app: Flask, user_datastore,cache):
     @app.get('/celery')
     def celery():
      add.delay(4,6)
-     return 200
+     return 'job sent' ,200
     
     @app.route('/upload', methods=['POST'])
     def upload_file():
