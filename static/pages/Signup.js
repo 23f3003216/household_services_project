@@ -4,6 +4,10 @@ const Signup = {
       <div class="card shadow p-4">
         <h3 class="card-title text-center mb-4">Sign Up</h3>
 
+        <div v-if="message" class="alert" :class="{'alert-success': success, 'alert-danger': !success}" role="alert">
+          {{ message }}
+        </div>
+
         <div class="form-group mb-3">
           <input v-model="email" type="email" class="form-control" placeholder="Email" required/>
         </div>
@@ -60,6 +64,7 @@ const Signup = {
       file: null,
       showCommonFields: true,
       message: "",
+      success: false,
     };
   },
   methods: {
@@ -95,11 +100,15 @@ const Signup = {
 
       if (res.ok) {
         const data = await res.json();
-        this.message = data.message;
-        router.push("/login");
+        this.message = "Account created successfully!";
+        this.success = true;
+        setTimeout(() => {
+          router.push("/login");
+        }, 2000); 
       } else {
         const errorData = await res.json();
-        this.message = errorData.message;
+        this.message = "Sign up failed: " + errorData.message;
+        this.success = false;
         console.error("Sign up failed:", errorData);
       }
     },
