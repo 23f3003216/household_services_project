@@ -9,20 +9,23 @@ authentication, and role-based functionalities. Separate registration forms were
 service professionals and customers, while a unified login form was created for all users,
 including admin, service professionals, and customers. Role-Based Access Control (RBAC) and
 Flask-Login were implemented to ensure proper authentication and user differentiation.
+
 ● Key models, such as User, Service, ServiceRequest, ServiceProfessional, and Customer, were
 defined, with relationships and back references established using SQLAlchemy to manage
 connections between users, services, and requests. An admin dashboard was created to facilitate
 user management, including flagging or reinstating users, and service management, where
 admins can create, update, or delete services and set base prices.
+
 ● Service professionals were equipped with functionality to manage service requests assigned to
 them, while customers could search for services by name or location, create new service
 requests, edit existing ones, and close them. Backend jobs were automated using Celery,
 including daily reminders for pending requests, monthly activity reports for customers, and
 user-triggered CSV exports of closed service requests, with alerts sent upon completion.
+
 ● To enhance performance, Redis was used for caching, with cache expiry configured to maintain
 data freshness.
 
-Frameworks and LIbraries Used:
+Frameworks and Libraries Used:
 ● Flask
 ● SQLAlchemy
 ● VueJS for UI
@@ -37,27 +40,39 @@ Frameworks and LIbraries Used:
 API End Points:
 /api/service-requests
 ● GET: Fetch all service requests (cached for 60 seconds).
+
 ● POST: Create a new service request (requires service_id, professional_id, remarks
 [optional]).
+
 ● PATCH: Update the status of a specific service request (accept or reject).
 /api/services
+
 ● GET: Fetch all available services (cached for 60 seconds).
+
 ● POST: Add a new service (requires name, price, description, time_required).
+
 ● PUT: Update an existing service by ID (requires service_id, and fields to update: name,
 price, description, time_required).
+
 ● DELETE: Delete a service by ID (requires service_id).
 /api/services/<int:service_id>
+
 ● Handles service-specific actions like updating or deleting a service by its ID.
 /api/service-packages/<int:service_id>
+
 ● GET: Fetch all service professionals for a specific service type (filtered by service_id).
 /api/service-history
+
 ● GET: Fetch the service history for the current logged-in customer (includes service name,
 professional name and phone, service status).
 /api/service-requests/professional/<int:professional_id>
+
 ● GET: Fetch all service requests assigned to a specific professional (professional_id).
 /api/all-users
+
 ● GET: Fetch a list of all users (includes id, email, active status, and assigned roles).
 /api/users/<int:user_id>/<string:action>
+
 ● PUT: Block or unblock a user by their ID (action: either block or unblock).
 
 Drive link of the presentation video:
