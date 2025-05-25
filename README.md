@@ -27,19 +27,30 @@ user-triggered CSV exports of closed service requests, with alerts sent upon com
 data freshness.
 
 Frameworks and Libraries Used:
+
 ● Flask
+
 ● SQLAlchemy
+
 ● VueJS for UI
+
 ● WTForms
+
 ● Flask-restful API
+
 ● Flask-WTF
+
 ● Flask-Login
+
 ● Redis for caching
+
 ● Redis and Celery for batch jobs
+
 ● Flask-Migrate
 
 API End Points:
 /api/service-requests
+
 ● GET: Fetch all service requests (cached for 60 seconds).
 
 ● POST: Create a new service request (requires service_id, professional_id, remarks
