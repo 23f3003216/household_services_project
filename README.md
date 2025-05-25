@@ -4,6 +4,7 @@ It is a multi-user app ( one admin, service professionals and customers) which a
 providing comprehensive home servicing and solutions.
 
 Approach:
+
 ● The application was developed with a comprehensive approach to user registration,
 authentication, and role-based functionalities. Separate registration forms were designed for
 service professionals and customers, while a unified login form was created for all users,
